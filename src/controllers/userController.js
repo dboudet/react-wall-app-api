@@ -9,6 +9,24 @@ exports.createUser = (req, res) => {
     .catch((err) => console.error(err))
 }
 
+exports.signInUser = (req, res) => {
+  User.findOne({ email: req.body.email })
+    .then((userFound) => {
+      console.log(userFound)
+      if (!userFound || userFound.password !== req.body.password) {
+        return res
+          .status(401)
+          .send("Authentication failed: User not found or incorrect password.")
+      }
+      if (userFound && userFound.password === req.body.password) {
+        res.status(200).send(userFound)
+      } else {
+        res.status(401).send("Authentication failed.")
+      }
+    })
+    .catch((err) => console.error(err))
+}
+
 exports.updateUser = (req, res) => {
   User.findOne({
     email: req.body.email,
