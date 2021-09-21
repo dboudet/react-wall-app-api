@@ -21,5 +21,5 @@ mongoose
 const userRoutes = require("./src/routes/userRoute")
 app.use(userRoutes)
 
-// const messageRoutes = require('./src/routes/messageRoute')
-// app.use(messageRoutes)
+const messageRoutes = require("./src/routes/messageRoute")
+app.use(messageRoutes)
