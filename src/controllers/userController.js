@@ -1,10 +1,22 @@
 const User = require("../models/userModel")
+const jwt = require("jsonwebtoken")
+const { tokenString } = require("../../tokenString")
 
 exports.createUser = (req, res) => {
   new User(req.body)
     .save()
-    .then(() => {
-      res.status(201).send("New user successfully created")
+    .then((user) => {
+      const token = jwt.sign(
+        { email: user.email, displayName: user.displayName },
+        tokenString
+      )
+      res.status(201).send({
+        status: 201,
+        message: "New user successfully created",
+        success: true,
+        displayName: user.displayName,
+        token,
+      })
     })
     .catch((err) => console.error(err))
 }
@@ -12,7 +24,6 @@ exports.createUser = (req, res) => {
 exports.signInUser = (req, res) => {
   User.findOne({ email: req.body.email })
     .then((userFound) => {
-      console.log(userFound)
       if (!userFound || userFound.password !== req.body.password) {
         res.status(401).send({
           message:
@@ -23,11 +34,16 @@ exports.signInUser = (req, res) => {
         return
       }
       if (userFound && userFound.password === req.body.password) {
-        res.status(200).send(
-          {
+        const token = jwt.sign(
+          { email: userFound.email, displayName: userFound.displayName },
+          tokenString
+        )
+        res.status(200).send({
           message: "You are now logged in and may post a new message.",
           status: 200,
           success: true,
+          displayName: userFound.displayName,
+          token,
         })
         return
       } else {
@@ -37,17 +53,7 @@ exports.signInUser = (req, res) => {
           status: 401,
           success: false,
         })
-        return
       }
     })
     .catch((err) => console.error(err))
 }
-
-// exports.updateUser = (req, res) => {
-//   User.findOne({
-//     email: req.body.email,
-//     token: req.body.token,
-//   })
-//     .then((res) => res.send("User info successfully updated"))
-//     .catch((err) => res.status(418).send("Could not update user.", err))
-// }
