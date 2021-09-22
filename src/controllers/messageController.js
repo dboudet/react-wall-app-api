@@ -1,3 +1,4 @@
+const { get } = require("mongoose")
 const Message = require("../models/messageModel")
 
 exports.postMessage = (req, res) => {
@@ -11,4 +12,13 @@ exports.postMessage = (req, res) => {
       })
     })
     .catch((err) => console.error(err))
+}
+
+exports.getAllMessages = (req,res) => {
+  Message
+    .find()
+    .then(allMessages => {
+      res.status(200).send(allMessages)
+  })
+  .catch(err => console.log(err))
 }
