@@ -18,6 +18,14 @@ const UserSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    status: {
+      type: String,
+      enum: ["pending", "verified"],
+      default: "pending",
+    },
+    confirmationCode: {
+      type: String,
+    },
   },
   { timestamps: true }
 )

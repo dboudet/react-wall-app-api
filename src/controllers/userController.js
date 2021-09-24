@@ -3,19 +3,16 @@ const jwt = require("jsonwebtoken")
 const { tokenString } = require("../../tokenString")
 
 exports.createUser = (req, res) => {
-  new User(req.body)
+  const token = jwt.sign({ email: req.body.email }, tokenString)
+  new User({ ...req.body, confirmationCode: token })
     .save()
     .then((user) => {
-      const token = jwt.sign(
-        { email: user.email, displayName: user.displayName },
-        tokenString
-      )
       res.status(201).send({
         status: 201,
         message: "New user successfully created",
         success: true,
         displayName: user.displayName,
-        token,
+        token: user.confirmationCode,
       })
     })
     .catch((err) => console.error(err))
