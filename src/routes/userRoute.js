@@ -4,6 +4,6 @@ const userController = require("../controllers/userController")
 
 router.post("/create-user", userController.createUser)
 router.post("/sign-in", userController.signInUser)
-// router.patch('/update-user', userController.updateUser)
+router.get("/verify-email/:confirmationCode", userController.verifyUser)
 
 module.exports = router
