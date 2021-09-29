@@ -5,10 +5,7 @@ const sgMail = require("@sendgrid/mail")
 sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
 exports.createUser = (req, res) => {
-  const confirmationCode = jwt.sign(
-    { email: req.body.email, displayName: req.body.displayName },
-    tokenString
-  )
+  const confirmationCode = jwt.sign({ email: req.body.email }, tokenString)
   const confirmationEmail = {
     to: req.body.email,
     from: "dboudet04@gmail.com",
@@ -17,12 +14,21 @@ exports.createUser = (req, res) => {
     html: `<p>Thanks for signing up with the Wall App. Please click on the following link to confirm your email address and log in:</p><p><strong>http://localhost:3000/verify-email/${confirmationCode}</strong></p>`,
   }
 
+  if (!req.body || !req.body.email || !req.body.password) {
+    res.status(400).send({
+      message: "Invalid request: missing email and/or password",
+      status: 400,
+      success: false,
+    })
+    return
+  }
   new User({ ...req.body, confirmationCode: confirmationCode })
     .save()
     .then(() => {
       res.status(201).send({
         status: 201,
-        message: "Thank you for signing up! Please check your email and click on the link to verify your email address in order to sign in.",
+        message:
+          "Thank you for signing up! Please check your email and click on the link to verify your email address in order to sign in.",
         success: true,
       })
     })
@@ -52,7 +58,10 @@ exports.verifyUser = (req, res) => {
           res.status(500).send({ message: err })
           return
         }
-        res.status(200).send({token: user.confirmationCode})
+        res.status(200).send({
+          message:
+            "Thank you for verifying your email address. You can now sign in and post a message to the wall.",
+        })
       })
     })
     .catch((err) => {
@@ -73,14 +82,12 @@ exports.signInUser = (req, res) => {
       }
       if (userFound && userFound.password === req.body.password) {
         if (userFound.status === "verified") {
-          const token = jwt.sign(
-            { email: userFound.email, displayName: userFound.displayName },
-            tokenString
-          )
+          const token = jwt.sign({ email: userFound.email }, tokenString)
           return res.status(200).send({
             message: "You are now logged in and may post a new message.",
             status: 200,
             success: true,
+            displayName: userFound.displayName,
             token,
           })
         } else {
